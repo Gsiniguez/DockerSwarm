@@ -35,7 +35,7 @@ services:
         - traefik.http.routers.swarmpit-https.entrypoints=https
         - traefik.http.routers.swarmpit-https.tls=true
         - traefik.http.routers.swarmpit-https.tls.certresolver=le
-        
+
         - traefik.http.services.swarmpit.loadbalancer.server.port=8080
 
   db:
@@ -54,7 +54,7 @@ services:
           memory: 256M
       placement:
         constraints:
-          - node.labels.swarmpit.db-data == true
+          - node.role == manager
 
   influxdb:
     image: influxdb:1.7
@@ -72,7 +72,7 @@ services:
           memory: 512M
       placement:
         constraints:
-          - node.labels.swarmpit.influx-data == true
+          - node.role == manager
 
   agent:
     image: swarmpit/agent:latest
