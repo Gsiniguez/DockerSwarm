@@ -8,8 +8,6 @@ services:
             ARANGO_CLUSTER_ROLE: agent
         networks:
             - backend
-        ports:
-          - "8529:8529"
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
         deploy:
@@ -25,8 +23,6 @@ services:
             ARANGO_CLUSTER_ROLE: dbserver
         networks:
             - backend
-        ports:
-          - "8529:8529"
         volumes:
             - arango_data:/var/lib/arangodb3
             - /var/run/docker.sock:/var/run/docker.sock
