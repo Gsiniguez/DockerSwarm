@@ -20,7 +20,8 @@ services:
       endpoint_mode: vip
       placement:
         constraints:
-          - node.labels.group==$INSTANCE_GROUP
+          #- node.labels.group==$INSTANCE_GROUP
+          - node.role == manager
       resources:
         limits:
           cpus: $LIMITS_CPU
