@@ -1,59 +1,44 @@
-version: '3.4'
+version: '3.3'
 
 services:
-
-    agent:
-        image: dumstruck/arangodb:latest
-        environment:
-            ARANGO_CLUSTER_ROLE: agent
-        networks:
-            - backend
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-        deploy:
-            replicas: 3
-            update_config:
-                parallelism: 1
-                delay: 10s
-                order: stop-first
-
-    dbserver:
-        image: dumstruck/arangodb:latest
-        environment:
-            ARANGO_CLUSTER_ROLE: dbserver
-        networks:
-            - backend
-        volumes:
-            - arango_data:/var/lib/arangodb3
-            - /var/run/docker.sock:/var/run/docker.sock
-        depends_on:
-            - agent
-        deploy:
-            replicas: 3
-
-    coordinator:
-        image: dumstruck/arangodb:latest
-        environment:
-            ARANGO_CLUSTER_ROLE: coordinator
-        networks:
-            - backend
-        ports:
-          - "8529:8529"
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-        depends_on:
-            - agent
-            - dbserver
-        deploy:
-            replicas: 3
-            update_config:
-                parallelism: 1
-                delay: 10s
-                order: stop-first
+  arangodb:
+    image: "${ARANGO_IMAGE}"
+    environment:
+      ARANGO_ROOT_PASSWORD: "${ARANGO_ROOT_PASSWORD}"
+      ARANGO_STORAGE_ENGINE: "${ARANGO_STORAGE_ENGINE}"
+    volumes:
+      - arangodb:/var/lib/arangodb3
+      - arangodb_apps:/var/lib/arangodb3-apps
+    ports:
+      - target: 8529
+        published: $ARANGO_PUBLISHED_PORT
+        protocol: tcp
+        mode: ingress
+    deploy:
+      mode: replicated
+      replicas: 1
+      endpoint_mode: vip
+      placement:
+        constraints:
+          - node.labels.group==$INSTANCE_GROUP
+      resources:
+        limits:
+          cpus: $LIMITS_CPU
+          memory: $LIMITS_MEMORY
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      update_config:
+        parallelism: 1
+        delay: 30s
+    stop_grace_period: 60s
 
 volumes:
-    arango_data: {}
-
-networks:
-    backend:
-        external: true
+  arangodb:
+    external:
+      name: ${ARANGO_VOLUME}
+  arangodb_apps:
+    external:
+      name: ${ARANGO_APPS_VOLUME}
